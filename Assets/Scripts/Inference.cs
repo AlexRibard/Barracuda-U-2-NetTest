@@ -50,7 +50,7 @@ public class Inference : MonoBehaviour
     {
         if (Application.HasUserAuthorization(UserAuthorization.WebCam))
         {
-            Debug.Log("webcam found");
+            Debug.Log("webcam found");//
         }
         else
         {
