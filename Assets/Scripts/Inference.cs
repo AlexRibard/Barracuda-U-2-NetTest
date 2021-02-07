@@ -11,14 +11,16 @@ public class Inference : MonoBehaviour
     private Model m_RuntimeModel;
     private IWorker m_Worker;
 #if (WEBCAM)
-    private WebCamTexture m_WebcamTexture;
+    public WebCamTexture m_WebcamTexture;
     private Tensor input;
 #else
     private Tensor m_Input;
     public Texture2D inputImage;
 #endif
     private Tensor result;
-    private RenderTexture targetRT;
+
+    public RenderTexture targetRT;
+    public RenderTexture resultMask;
 
     public NNModel inputModel;
     public Material preprocessMaterial;
@@ -46,17 +48,15 @@ public class Inference : MonoBehaviour
 
     void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 30;
         m_RuntimeModel = ModelLoader.Load(inputModel, false);
         m_Worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, m_RuntimeModel, false);
-
-
 #if (WEBCAM)
 #if !UNITY_EDITOR
 //Print this on device
         Debug.Log("Using webcam");
 #endif
-        m_WebcamTexture = new WebCamTexture();
+        m_WebcamTexture = new WebCamTexture(320, 320, 6);
         m_WebcamTexture.Play();
 #else
         var targetRT = RenderTexture.GetTemporary(inputResolutionX, inputResolutionY, 0);
@@ -65,14 +65,14 @@ public class Inference : MonoBehaviour
 
         m_Input = new Tensor(1, inputResolutionY, inputResolutionX, 3);
 #endif
+        //Test
+        //resultMask = new RenderTexture(inputResolutionX, inputResolutionY, 0);
     }
 
     void Update()
     {
-        //m_Worker.Dispose();
-        // result.Dispose();
 #if (WEBCAM)
-        targetRT = RenderTexture.GetTemporary(inputResolutionX, inputResolutionY, 0);
+        //targetRT = RenderTexture.GetTemporary(inputResolutionX, inputResolutionY, 0);
         Graphics.Blit(m_WebcamTexture, targetRT, postprocessMaterial);
         input = new Tensor(targetRT, 3);
         //input.shape = targetRT;
@@ -80,17 +80,24 @@ public class Inference : MonoBehaviour
         m_Worker.Execute(input);
         result = m_Worker.PeekOutput("output");
 
-        RenderTexture resultMask = new RenderTexture(inputResolutionX, inputResolutionY, 0);
+
         resultMask.enableRandomWrite = true;
         resultMask.Create();
 
         result.ToRenderTexture(resultMask);
 
 
-        postprocessMaterial.mainTexture = resultMask;
+        //postprocessMaterial.mainTexture = resultMask;
 #if (WEBCAM)
-        preprocessMaterial.mainTexture = targetRT;
+        preprocessMaterial.mainTexture = m_WebcamTexture;
 #endif
+
+        resultMask.DiscardContents();
+        targetRT.DiscardContents();
+
+        //resultMask.Release();
+        //targetRT.Release();
+
         result.Dispose();
         result.FlushCache();
         input.Dispose();
