@@ -48,15 +48,24 @@ public class Inference : MonoBehaviour
 
     void Start()
     {
+        if (Application.HasUserAuthorization(UserAuthorization.WebCam))
+        {
+            Debug.Log("webcam found");
+        }
+        else
+        {
+            Debug.Log("webcam not found");
+        }
         Application.targetFrameRate = 30;
         m_RuntimeModel = ModelLoader.Load(inputModel, false);
         m_Worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, m_RuntimeModel, false);
+        //resultMask.enableRandomWrite = true;
 #if (WEBCAM)
 #if !UNITY_EDITOR
 //Print this on device
         Debug.Log("Using webcam");
 #endif
-        m_WebcamTexture = new WebCamTexture(320, 320, 6);
+        m_WebcamTexture = new WebCamTexture(320, 320, 30);
         m_WebcamTexture.Play();
 #else
         var targetRT = RenderTexture.GetTemporary(inputResolutionX, inputResolutionY, 0);
@@ -79,9 +88,6 @@ public class Inference : MonoBehaviour
 #endif
         m_Worker.Execute(input);
         result = m_Worker.PeekOutput("output");
-
-
-        resultMask.enableRandomWrite = true;
         resultMask.Create();
 
         result.ToRenderTexture(resultMask);

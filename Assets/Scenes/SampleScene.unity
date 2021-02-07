@@ -286,8 +286,8 @@ MonoBehaviour:
   inputModel: {fileID: 11400000, guid: 11fa51da8ca8aa641ae224b16f407206, type: 3}
   preprocessMaterial: {fileID: 2100000, guid: 58e00242fad4b57459ef0db414c69a27, type: 2}
   postprocessMaterial: {fileID: 2100000, guid: 60d072d8133ee7a4c89414da1d3b7a3c, type: 2}
-  inputResolutionY: 320
-  inputResolutionX: 320
+  inputResolutionY: 128
+  inputResolutionX: 128
 --- !u!1 &1600742528
 GameObject:
   m_ObjectHideFlags: 0
